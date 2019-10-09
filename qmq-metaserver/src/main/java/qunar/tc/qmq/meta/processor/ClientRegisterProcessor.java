@@ -22,7 +22,9 @@ import qunar.tc.qmq.meta.cache.CachedMetaInfoManager;
 import qunar.tc.qmq.meta.cache.CachedOfflineStateManager;
 import qunar.tc.qmq.meta.monitor.QMon;
 import qunar.tc.qmq.meta.order.AllocationService;
+import qunar.tc.qmq.meta.order.PartitionReallocator;
 import qunar.tc.qmq.meta.route.SubjectRouter;
+import qunar.tc.qmq.meta.store.ClientMetaInfoStore;
 import qunar.tc.qmq.meta.store.Store;
 import qunar.tc.qmq.netty.NettyRequestProcessor;
 import qunar.tc.qmq.protocol.Datagram;
@@ -44,9 +46,11 @@ public class ClientRegisterProcessor implements NettyRequestProcessor {
     public ClientRegisterProcessor(final SubjectRouter subjectRouter,
                                    final CachedOfflineStateManager offlineStateManager,
                                    final Store store,
+                                   final ClientMetaInfoStore clientMetaInfoStore,
                                    final CachedMetaInfoManager cachedMetaInfoManager,
-                                   final AllocationService allocationService) {
-        this.clientRegisterWorker = new ClientRegisterWorker(subjectRouter, offlineStateManager, store, cachedMetaInfoManager, allocationService);
+                                   final AllocationService allocationService,
+                                   final PartitionReallocator partitionReallocator) {
+        this.clientRegisterWorker = new ClientRegisterWorker(subjectRouter, offlineStateManager, store, cachedMetaInfoManager, clientMetaInfoStore, allocationService, partitionReallocator);
     }
 
     @Override

@@ -82,9 +82,10 @@ public class DefaultConsumerOnlineStateManager implements ConsumerOnlineStateMan
             SwitchWaiter switchWaiter = new SwitchWaiter(healthCheckOnline);
             switchWaiter.addListener(isOnline -> {
                 if (isOnline) {
-                    LOGGER.info("Consumer Online, Subject {} ConsumerGroup {}", subject, consumerGroup);
+                    LOGGER.info("consumer offline, subject {} consumerGroup {} broadcast {} ordered {} clientId {}", subject, consumerGroup, isBroadcast, isOrdered, clientId);
                 } else {
                     // 触发 Consumer 下线清理操作
+                    LOGGER.info("consumer offline, Subject {} ConsumerGroup {} Broadcast {} ordered {} clientId {}", subject, consumerGroup, isBroadcast, isOrdered, clientId);
                     offlineCallback.run();
                 }
 

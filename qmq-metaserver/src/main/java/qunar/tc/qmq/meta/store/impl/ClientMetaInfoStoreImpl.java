@@ -36,6 +36,7 @@ public class ClientMetaInfoStoreImpl implements ClientMetaInfoStore {
 
     private static final String QUERY_CONSUMER_SQL = "SELECT subject_info, consume_strategy, online_status, client_type, consumer_group, client_id, app_code, room FROM client_meta_info WHERE subject_info=? AND client_type=?";
     private static final String QUERY_CLIENT_AFTER_DATE_SQL = "SELECT subject_info, consume_strategy, online_status, client_type, consumer_group, client_id, app_code, room from client_meta_info where client_type=? and online_status = ? and update_time > ?";
+    private static final String QUERY_CLIENT_AFTER_DATE_BY_SUBJECT_AND_CGROUP_SQL = "SELECT subject_info, consume_strategy, online_status, client_type, consumer_group, client_id, app_code, room from client_meta_info where subject_info = ? and consumer_group = ? and client_type=? and online_status = ? and update_time > ?";
     private static final String UPDATE_CLIENT_STATE_SQL = "update client_meta_info set update_time = now(), online_status = ?, consume_strategy = ? where subject_info = ? and client_type = ? and consumer_group = ? and client_id = ?";
 
     private final JdbcTemplate jdbcTemplate = JdbcTemplateHolder.getOrCreate();
@@ -73,14 +74,14 @@ public class ClientMetaInfoStoreImpl implements ClientMetaInfoStore {
 
     @Override
     public List<ClientMetaInfo> queryClientsUpdateAfterDate(String subject, String consumerGroup, ClientType clientType, OnOfflineState onlineStatus, Date updateDate) {
-        return jdbcTemplate.query(QUERY_CLIENT_AFTER_DATE_SQL, clientMetaInfoRowMapper, subject, consumerGroup, clientType.getCode(), onlineStatus.name(), updateDate);
+        return jdbcTemplate.query(QUERY_CLIENT_AFTER_DATE_BY_SUBJECT_AND_CGROUP_SQL, clientMetaInfoRowMapper, subject, consumerGroup, clientType.getCode(), onlineStatus.name(), updateDate);
     }
 
     @Override
     public int updateClientOnlineState(ClientMetaInfo clientMetaInfo, ConsumeStrategy consumeStrategy) {
         return jdbcTemplate.update(UPDATE_CLIENT_STATE_SQL,
                 clientMetaInfo.getOnlineStatus().name(),
-                consumeStrategy,
+                consumeStrategy.name(),
                 clientMetaInfo.getSubject(),
                 clientMetaInfo.getClientTypeCode(),
                 defaultEmpty(clientMetaInfo.getConsumerGroup()),

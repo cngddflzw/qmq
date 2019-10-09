@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qunar.tc.qmq.utils.NetworkUtils;
 
+import java.lang.management.ManagementFactory;
 import java.util.UUID;
 
 /**
@@ -34,7 +35,7 @@ class DefaultClientIdProvider implements ClientIdProvider {
 
     @Override
     public String get() {
-        return NetworkUtils.getLocalHostname() + "@@" + defaultUniqueId();
+        return NetworkUtils.getLocalHostname() + "@@" + defaultUniqueId() + "@@" + ManagementFactory.getRuntimeMXBean().getName();
     }
 
     private String defaultUniqueId() {

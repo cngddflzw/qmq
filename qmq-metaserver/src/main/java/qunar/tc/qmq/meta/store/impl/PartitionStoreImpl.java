@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author zhenwei.liu
@@ -26,10 +27,12 @@ public class PartitionStoreImpl implements PartitionStore {
             "(subject, partition_name, partition_id, logical_partition_lower_bound, logical_partition_upper_bound, broker_group, rw_status) " +
             "values (?, ?, ?, ?, ?, ?, ?)";
 
+    private static final String UPDATE_PARTITION_STATE_SQL = "update partitions set rw_status = :rw_status where subject = :subject and partition_id in (:ids)";
+
     private static final String SELECT_BY_IDS =
             "select subject, partition_name, partition_id, logical_partition_lower_bound, logical_partition_upper_bound, broker_group, rw_status  " +
                     "from partitions" +
-                    "where subject = :subject and physical_partition in (:ids)";
+                    "where subject = :subject and partition_id in (:ids)";
 
 
     private static final String SELECT_ALL =
@@ -92,6 +95,15 @@ public class PartitionStoreImpl implements PartitionStore {
                         return partitions.size();
                     }
                 });
+    }
+
+    @Override
+    public void updatePartitionsByIds(String subject, Set<Integer> partitionIds, Partition.Status status) {
+        Map<String, Object> param = Maps.newHashMap();
+        param.put("rw_status", status.name());
+        param.put("subject", subject);
+        param.put("ids", partitionIds);
+        parameterTemplate.update(UPDATE_PARTITION_STATE_SQL, param);
     }
 
     @Override

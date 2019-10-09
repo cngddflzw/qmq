@@ -38,6 +38,7 @@ import qunar.tc.qmq.producer.sender.DefaultMessageGroupResolver;
 import qunar.tc.qmq.protocol.MetaInfoResponse;
 import qunar.tc.qmq.protocol.consumer.ConsumerMetaInfoResponse;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,13 +54,26 @@ public class PullRegister implements ConsumerRegister {
 
     private abstract class PullClientUpdater implements MetaInfoClient.ResponseSubscriber {
 
+        private String subject;
+        private String consumerGroup;
+
+        public PullClientUpdater(String subject, String consumerGroup) {
+            this.subject = subject;
+            this.consumerGroup = consumerGroup;
+        }
+
         @Override
         public void onSuccess(MetaInfoResponse response) {
             if (response.getClientTypeCode() != ClientType.CONSUMER.getCode()) {
                 return;
             }
 
-            updateClient((ConsumerMetaInfoResponse) response);
+            String respSubject = response.getSubject();
+            String respConsumerGroup = response.getConsumerGroup();
+
+            if (Objects.equals(respSubject, subject) || Objects.equals(respConsumerGroup, consumerGroup)) {
+                updateClient((ConsumerMetaInfoResponse) response);
+            }
         }
 
         abstract void updateClient(ConsumerMetaInfoResponse response);
@@ -131,7 +145,8 @@ public class PullRegister implements ConsumerRegister {
             pullClient.offline();
         });
         metaInfoService.registerHeartbeat(appCode, ClientType.CONSUMER.getCode(), subject, consumerGroup, param.isBroadcast(), param.isOrdered());
-        metaInfoService.registerResponseSubscriber(new PullClientUpdater() {
+        metaInfoService.registerResponseSubscriber(new PullClientUpdater(subject, consumerGroup) {
+
             @Override
             void updateClient(ConsumerMetaInfoResponse response) {
                 pullEntryManager.updateClient(response, param);
@@ -157,7 +172,7 @@ public class PullRegister implements ConsumerRegister {
                 isBroadcast,
                 isOrdered
         );
-        metaInfoService.registerResponseSubscriber(new PullClientUpdater() {
+        metaInfoService.registerResponseSubscriber(new PullClientUpdater(subject, consumerGroup) {
             @Override
             void updateClient(ConsumerMetaInfoResponse response) {
                 pullConsumerManager.updateClient(response, new PullConsumerRegistryParam(isBroadcast, isOrdered, HEALTHCHECKER));

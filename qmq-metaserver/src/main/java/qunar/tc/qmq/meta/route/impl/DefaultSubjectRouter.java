@@ -45,7 +45,7 @@ public class DefaultSubjectRouter implements SubjectRouter {
         SubjectInfo subjectInfo = getOrCreateSubjectInfo(subject);
 
         //query assigned brokers
-        final List<String> assignedBrokers = cachedMetaInfoManager.getConsumerGroups(subject);
+        final List<String> assignedBrokers = cachedMetaInfoManager.getBrokerGroups(subject);
 
         List<String> newAssignedBrokers;
         if (assignedBrokers == null || assignedBrokers.size() == 0) {

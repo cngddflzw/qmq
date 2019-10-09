@@ -104,7 +104,15 @@ public class DefaultCachedMetaInfoManager implements Disposable, CachedMetaInfoM
     private volatile SetMultimap<String, String> readonlyBrokerGroupSettings = HashMultimap.create();
 
     public DefaultCachedMetaInfoManager(DynamicConfig config, Store store, ReadonlyBrokerGroupSettingStore readonlyBrokerGroupSettingStore, PartitionService partitionService) {
-        this.refreshPeriodSeconds = config.getLong("refresh.period.seconds", DEFAULT_REFRESH_PERIOD_SECONDS);
+        this(store, readonlyBrokerGroupSettingStore, partitionService, config.getLong("refresh.period.seconds", DEFAULT_REFRESH_PERIOD_SECONDS));
+    }
+
+    public DefaultCachedMetaInfoManager(Store store, ReadonlyBrokerGroupSettingStore readonlyBrokerGroupSettingStore, PartitionService partitionService) {
+        this(store, readonlyBrokerGroupSettingStore, partitionService, DEFAULT_REFRESH_PERIOD_SECONDS);
+    }
+
+    private DefaultCachedMetaInfoManager(Store store, ReadonlyBrokerGroupSettingStore readonlyBrokerGroupSettingStore, PartitionService partitionService, long refreshPeriodSeconds) {
+        this.refreshPeriodSeconds = refreshPeriodSeconds;
         this.store = store;
         this.readonlyBrokerGroupSettingStore = readonlyBrokerGroupSettingStore;
         this.partitionService = partitionService;
@@ -112,7 +120,7 @@ public class DefaultCachedMetaInfoManager implements Disposable, CachedMetaInfoM
         initRefreshTask();
     }
 
-    @Override
+        @Override
     public SubjectInfo getSubjectInfo(String subject) {
         return cachedSubjectInfoMap.get(subject);
     }
@@ -122,7 +130,7 @@ public class DefaultCachedMetaInfoManager implements Disposable, CachedMetaInfoM
     }
 
     @Override
-    public List<String> getConsumerGroups(String subject) {
+    public List<String> getBrokerGroups(String subject) {
         final List<String> groups = cachedSubjectGroups.get(subject);
         if (groups == null) {
             return ImmutableList.of();
